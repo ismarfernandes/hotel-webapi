@@ -48,8 +48,3 @@ When running, a page will open in the browser where the created EndPoints will b
 ## Support
 
 If you are having problems, please let us know by [raising a new issue](https://github.com/ismarfernandes/hotel-webapi/issues/new).
-
-
-## License
-
-This project is licensed with the [MIT license](LICENSE).
