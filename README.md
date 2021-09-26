@@ -24,19 +24,27 @@ You’ve been given the responsibility to develop a booking API for the very las
 
 ## Environment requirements
 - Install [.NET 5 SDK](https://dotnet.microsoft.com/download/dotnet/5.0)
+- Install [EF Core CLI](https://docs.microsoft.com/pt-br/ef/core/cli/dotnet)
 - Install [SQL Server](https://www.microsoft.com/en-ca/sql-server/sql-server-downloads) or use the [SQL Server Express LocalDB](https://www.microsoft.com/en-ca/sql-server/sql-server-downloads)
 
 ## Executing the project
-1. Go to ***..\hotel\src\Hotel.Api\appsettings.json*** file and set up the SQL Server ConnectionString
-2. In the ***Package Manager Console***, set up the ***Defaul Project*** to ***src\Hotel.Data***
-3. In the ***Package Manager Console***, run the command ```update-database``` to create the database.
-4. Set up the ***src\Hotel.Api*** as Startup Project.
-5. Run the project.
+```bash
+# Clone the repo
+git clone git@github.com:ismarfernandes/hotel-webapi.git
+
+# Access the source code folder
+cd .\hotel-webapi\src
+
+# Run migrations
+dotnet ef database update --project .\src\Hotel.Data\  --startup-project .\src\Hotel.Api\ --context HotelContext
+
+# Run the project
+dotnet run --project .\src\Hotel.Api\Hotel.Api.csproj
+```
 
 
 ## Usage
-The project can be tested using the Swagger already added to the project.
-When running, a page will open in the browser where the created EndPoints will be available for testing.
+The project can be tested using the Swagger already added to the project. In a web browser access the url: https://localhost:5001/swagger/index.html and enjoy.
 
 
 ## References
@@ -48,3 +56,8 @@ When running, a page will open in the browser where the created EndPoints will b
 ## Support
 
 If you are having problems, please let us know by [raising a new issue](https://github.com/ismarfernandes/hotel-webapi/issues/new).
+
+
+## License
+
+This project is licensed with the [MIT license](LICENSE).
