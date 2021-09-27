@@ -16,7 +16,7 @@ namespace Hotel.Data.Configurations
             builder.Property(e => e.CheckIn).IsRequired();
             builder.Property(e => e.CheckOut).IsRequired();
             builder.Property(e => e.Status).IsRequired();
-            builder.Property(x => x.RoomId).ValueGeneratedNever();
+            builder.Property(x => x.RoomId).IsRequired().ValueGeneratedNever();
 
             builder.HasOne(e => e.Room).WithMany(f => f.Reservations).HasForeignKey(f => f.RoomId).IsRequired();
         }
