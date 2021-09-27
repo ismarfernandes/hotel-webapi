@@ -1,49 +1,53 @@
 ﻿using System;
-using System.Net.Http;
-using System.Text;
-using System.Text.Json;
 
 using Hotel.Api;
-using Hotel.Application.Dtos.Request;
 using Hotel.Application.Dtos.Response;
-using Hotel.Domain.Enumerations;
 using Hotel.Shared.Responses;
 
-using Microsoft.AspNetCore.Mvc.Testing;
+using Newtonsoft.Json;
 
 using Xunit;
 
 namespace Hotel.Test
 {
-    public class RoomAppTest : AppTest
+    public class RoomAppTest : IClassFixture<HotelWebApplicationFactory<Startup>>
     {
         #region Constructors
-        public RoomAppTest(WebApplicationFactory<Startup> factory) : base(factory)
+        public RoomAppTest(HotelWebApplicationFactory<Startup> factory)
         {
-            baseApiUrl = "/api/Room";
+            _factory = factory;
+            _endPoint = "/api/Room";
         }
+        #endregion
+
+        #region Fields
+        private readonly HotelWebApplicationFactory<Startup> _factory;
+        private readonly string _endPoint;
         #endregion
 
         #region Public Methods
         [Fact]
-        public async void ShouldMakeBooking()
+        public async void ShouldRoomAvailable()
         {
             //Arrange
-            var client = CreateClient();
+            var client = _factory.CreateClient();
             var checkIn = DateTime.Now.AddDays(1);
             var checkOut = DateTime.Now.AddDays(2);
-            var checkInJson = JsonSerializer.Serialize(checkIn).Replace("\"", "");
-            var checkOutJson = JsonSerializer.Serialize(checkOut).Replace("\"", "");
+            var checkInJson = JsonConvert.SerializeObject(checkIn).Replace("\"", "");
+            var checkOutJson = JsonConvert.SerializeObject(checkOut).Replace("\"", "");
 
             //Act
-            var response = await client.GetAsync($"{baseApiUrl}/CheckAvailabilityAsync?checkIn={checkInJson}&checkOut={checkOutJson}");
+            var response = await client.GetAsync($"{_endPoint}/CheckAvailabilityAsync?checkIn={checkInJson}&checkOut={checkOutJson}");
             var jsonBodyResponse = await response.Content.ReadAsStringAsync();
-            var result = JsonSerializer.Deserialize<Response>(jsonBodyResponse, _jsonOptions);
+            var result = JsonConvert.DeserializeObject<Response>(jsonBodyResponse);
+            var resultJson = JsonConvert.SerializeObject(result.Result);
+            var roomResponseDto = JsonConvert.DeserializeObject<RoomResponseDto>(resultJson);
 
             //Assert
             response.EnsureSuccessStatusCode();
             Assert.True(result.Success);
             Assert.NotNull(result.Result);
+            Assert.True(roomResponseDto.Id != 0);
         }
         #endregion
     }

@@ -1,26 +1,34 @@
 using System;
 using System.Net.Http;
 using System.Text;
-using System.Text.Json;
+using System.Threading.Tasks;
 
+using Hotel.Api;
 using Hotel.Application.Dtos.Request;
 using Hotel.Application.Dtos.Response;
 using Hotel.Domain.Enumerations;
+using Hotel.Shared.Interfaces;
 using Hotel.Shared.Responses;
 
-using Microsoft.AspNetCore.Mvc.Testing;
+using Newtonsoft.Json;
 
 using Xunit;
 
 namespace Hotel.Test
 {
-    public class ReservationApplicationTest : AppTest
+    public class ReservationApplicationTest : IClassFixture<HotelWebApplicationFactory<Startup>>
     {
         #region Constructors
-        public ReservationApplicationTest(WebApplicationFactory<Api.Startup> factory) : base(factory) 
+        public ReservationApplicationTest(HotelWebApplicationFactory<Api.Startup> factory)
         {
-            baseApiUrl = "/api/Reservation";
+            _endPoint = "/api/Reservation";
+            _factory = factory;
         }
+        #endregion
+
+        #region Fields
+        private readonly HotelWebApplicationFactory<Startup> _factory;
+        private string _endPoint;
         #endregion
 
         #region Tests Methods
@@ -28,7 +36,7 @@ namespace Hotel.Test
         public async void ShouldMakeBooking()
         {
             //Arrange
-            var client = CreateClient();
+            var client = _factory.CreateClient();
             var dto = new ReservationCreateRequestDto
             {
                 CheckIn = DateTime.Now.AddDays(1),
@@ -36,11 +44,12 @@ namespace Hotel.Test
             };
 
             //Act
-            var jsonBodyRequest = JsonSerializer.Serialize(dto, _jsonOptions);
-            var response = await client.PostAsync($"{baseApiUrl}/MakeAsync", new StringContent(jsonBodyRequest, Encoding.UTF8, "application/json"));
+            var jsonBodyRequest = JsonConvert.SerializeObject(dto);
+            var response = await client.PostAsync($"{_endPoint}/MakeAsync", new StringContent(jsonBodyRequest, Encoding.UTF8, "application/json"));
             var jsonBodyResponse = await response.Content.ReadAsStringAsync();
-            var result = JsonSerializer.Deserialize<Response>(jsonBodyResponse, _jsonOptions);
-            var createdBookingResponseDto = (ReservationResponseDto)result.Result;
+            var result = JsonConvert.DeserializeObject<Response>(jsonBodyResponse);
+            var resultJson = JsonConvert.SerializeObject(result.Result);
+            var createdBookingResponseDto = JsonConvert.DeserializeObject<ReservationResponseDto>(resultJson);
 
             //Assert
             response.EnsureSuccessStatusCode();
@@ -55,7 +64,7 @@ namespace Hotel.Test
         public async void ShouldModifyBooking()
         {
             //Arrange
-            var client = CreateClient();
+            var client = _factory.CreateClient();
 
             var createBookingDto = new ReservationCreateRequestDto
             {
@@ -74,11 +83,12 @@ namespace Hotel.Test
             };
 
             //Act
-            var jsonBodyRequest = JsonSerializer.Serialize(dto, _jsonOptions);
-            var response = await client.PutAsync($"{baseApiUrl}/ModifyAsync/{createBookingResponseDto.Id}", new StringContent(jsonBodyRequest, Encoding.UTF8, "application/json"));
+            var jsonBodyRequest = JsonConvert.SerializeObject(dto);
+            var response = await client.PutAsync($"{_endPoint}/ModifyAsync/{createBookingResponseDto.Id}", new StringContent(jsonBodyRequest, Encoding.UTF8, "application/json"));
             var jsonBodyResponse = await response.Content.ReadAsStringAsync();
-            var result = JsonSerializer.Deserialize<Response>(jsonBodyResponse, _jsonOptions);
-            var modifiedBookingResponseDto = (ReservationResponseDto)result.Result;
+            var result = JsonConvert.DeserializeObject<Response>(jsonBodyResponse);
+            var resultJson = JsonConvert.SerializeObject(result.Result);
+            var modifiedBookingResponseDto = JsonConvert.DeserializeObject<ReservationResponseDto>(resultJson);
 
             //Assert
             response.EnsureSuccessStatusCode();
@@ -92,7 +102,7 @@ namespace Hotel.Test
         public async void ShouldCancelBooking()
         {
             //Arrange
-            var client = CreateClient();
+            var client = _factory.CreateClient();
 
             var createBookingDto = new ReservationCreateRequestDto
             {
@@ -101,20 +111,39 @@ namespace Hotel.Test
             };
 
             var createBookingResponse = await MakeAsync(createBookingDto);
-
             var createBookingResponseDto = (ReservationResponseDto)createBookingResponse.Result;
 
             //Act
-            var response = await client.DeleteAsync($"{baseApiUrl}/CancelAsync/{createBookingResponseDto.Id}");
+            var response = await client.DeleteAsync($"{_endPoint}/CancelAsync/{createBookingResponseDto.Id}");
             var jsonBodyResponse = await response.Content.ReadAsStringAsync();
-            var result = JsonSerializer.Deserialize<Response>(jsonBodyResponse, _jsonOptions);
-
-            var canceledBookingResponseDto = (ReservationResponseDto)result.Result;
+            var result = JsonConvert.DeserializeObject<Response>(jsonBodyResponse);
+            var resultJson = JsonConvert.SerializeObject(result.Result);
+            var canceledBookingResponseDto = JsonConvert.DeserializeObject<ReservationResponseDto>(resultJson);
 
             //Assert
             response.EnsureSuccessStatusCode();
             Assert.True(result.Success);
             Assert.True(canceledBookingResponseDto.Status == ReservationStatus.Canceled.ToString());
+        }
+        #endregion
+
+        #region Private Methods
+        protected async Task<IResponse> MakeAsync(ReservationCreateRequestDto dto)
+        {
+            //Arrange
+            var client = _factory.CreateClient();
+
+            //Act
+            var jsonBodyRequest = JsonConvert.SerializeObject(dto);
+            var response = await client.PostAsync($"{_endPoint}/MakeAsync", new StringContent(jsonBodyRequest, Encoding.UTF8, "application/json"));
+            var jsonBodyResponse = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<Response>(jsonBodyResponse);
+            var resultJson = JsonConvert.SerializeObject(result.Result);
+            var resultDto = JsonConvert.DeserializeObject<ReservationResponseDto>(resultJson);
+
+            result.Result = resultDto;
+
+            return result;
         }
         #endregion
     }
