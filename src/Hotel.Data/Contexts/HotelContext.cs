@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using System.Reflection;
+﻿using System.Reflection;
 
 using Hotel.Data.Extensions;
 using Hotel.Domain.Entities;
@@ -14,18 +13,10 @@ namespace Hotel.Data.Contexts
         #region Constructors
         public HotelContext()
         {
-            if (Database.GetPendingMigrations().Any())
-            {
-                Database.Migrate();
-            }
         }
 
         public HotelContext(DbContextOptions<HotelContext> options) : base(options)
         {
-            if (Database.GetPendingMigrations().Any())
-            {
-                Database.Migrate();
-            }
         }
         #endregion
 
