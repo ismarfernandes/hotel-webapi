@@ -32,8 +32,10 @@ You’ve been given the responsibility to develop a booking API for the very las
 # Clone the repo
 git clone git@github.com:ismarfernandes/hotel-webapi.git
 
+# Go to \src\Hotel.Api\appsettings.json file and set up the SQL Server ConnectionString 
+
 # Access the source code folder
-cd .\hotel-webapi\src
+cd .\hotel-webapi\
 
 # Run migrations
 dotnet ef database update --project .\src\Hotel.Data\  --startup-project .\src\Hotel.Api\ --context HotelContext
@@ -56,8 +58,3 @@ The project can be tested using the Swagger already added to the project. In a w
 ## Support
 
 If you are having problems, please let us know by [raising a new issue](https://github.com/ismarfernandes/hotel-webapi/issues/new).
-
-
-## License
-
-This project is licensed with the [MIT license](LICENSE).
